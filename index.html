@@ -7,7 +7,547 @@
 <title>MONITORING PRODUKSI | Production & Quality Control</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+:root{<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MONITORING PRODUKSI | Production & Quality Control</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
 :root{
+  --navy:#20352f;--blue:#9a783e;--bg:#f4f0e7;--text:#2b302c;
+  --muted:#77786f;--border:#ded6c7;--green:#3e7057;
+  --red:#a64d42;--cream:#fbf9f4;--gold:#b3945d
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font-family:Arial,sans-serif}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;background:var(--navy);color:#f7f2e8;padding:27px 16px;flex-shrink:0;border-right:3px solid var(--gold)}
+.brand{font-size:20px;font-weight:700;letter-spacing:1.6px;line-height:1.35}
+.brand-sub{font-family:Arial,sans-serif;font-size:10px;color:#d0c4a9;margin-top:9px;line-height:1.6}
+.side-label{font-family:Arial,sans-serif;font-size:10px;color:#c4ae7e;margin:35px 12px 11px;letter-spacing:2px}
+.nav{width:100%;border:1px solid transparent;background:transparent;color:#e1ded3;text-align:left;padding:13px 14px;border-radius:4px;margin:4px 0;font-size:13px}
+.nav:hover,.nav.active{background:#304940;color:#fff8e9;border-color:#8f794f}
+.sidebar-foot{font-family:Arial,sans-serif;font-size:10px;color:#c0b69e;margin:45px 10px 0;line-height:1.8}
+.main{flex:1;min-width:0}
+.topbar{background:var(--cream);border-bottom:1px solid var(--border);padding:21px 31px;display:flex;justify-content:space-between;align-items:center;gap:15px;box-shadow:0 2px 8px #312b1a08}
+.topbar h2{margin:0;font-size:21px;color:var(--navy)}
+.topbar p{font-family:Arial,sans-serif;margin:6px 0 0;font-size:11px;color:var(--muted)}
+.tag{font-family:Arial,sans-serif;font-size:10px;background:#eee5d2;color:#765d31;padding:8px 11px;border:1px solid #d8c8a7;border-radius:3px;letter-spacing:1px;white-space:nowrap}
+.content{padding:29px 31px;max-width:1480px;margin:auto}
+.page-title{font-size:27px;color:var(--navy);margin:0 0 8px}
+.subtitle{font-family:Arial,sans-serif;font-size:12px;color:var(--muted);margin:0 0 24px;line-height:1.7}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;margin-bottom:24px}
+.card,.panel{background:var(--cream);border:1px solid var(--border);border-radius:5px;padding:21px;box-shadow:0 3px 12px #332b1a06}
+.card{border-top:3px solid var(--gold)}
+.card small{font-family:Arial,sans-serif;color:var(--muted);font-size:11px}
+.card strong{display:block;font-size:31px;color:var(--navy);margin:14px 0 7px}
+.card span{font-family:Arial,sans-serif;font-size:10px;color:var(--muted);line-height:1.5}
+.panel{margin-bottom:20px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.panel h3{font-size:17px;color:var(--navy);margin:0}
+.periods{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.period{border:1px solid var(--border);background:var(--cream);border-radius:3px;padding:10px 14px;font-size:11px;color:var(--text)}
+.period.active{background:var(--navy);border-color:var(--navy);color:#fff8e9}
+.report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.report,.dashboard-report{border:1px solid var(--border);border-radius:5px;padding:18px;background:var(--cream);box-shadow:0 3px 10px #332b1a05;min-width:0}
+.report-top{display:flex;gap:12px;align-items:flex-start}
+.report-icon{width:39px;height:39px;border-radius:3px;background:#eee5d2;color:#765d31;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;border:1px solid #dfd0b2}
+.report h4,.dashboard-report h4{margin:2px 0 7px;font-size:16px;color:var(--navy)}
+.report p{font-family:Arial,sans-serif;font-size:11px;color:var(--muted);margin:0;line-height:1.65}
+.report-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:17px;flex-wrap:wrap}
+.status{font-family:Arial,sans-serif;font-size:10px;border-radius:3px;padding:6px 9px;background:#eeeae1;color:#6d6b60;letter-spacing:.2px}
+.status.done,.status.complete{background:#e4ece5;color:var(--green)}
+.status.pending,.status.incomplete{background:#f5e7e2;color:var(--red)}
+.btn{border:1px solid var(--navy);background:var(--navy);color:#fff8e9;border-radius:3px;padding:10px 13px;font-size:11px;letter-spacing:.2px}
+.btn:hover{filter:brightness(1.12)}
+.btn.secondary{background:transparent;border:1px solid #c6b99f;color:var(--navy)}
+.btn.danger{background:#a64d42;border-color:#a64d42}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:4px;background:var(--cream)}
+table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:11px}
+th,td{text-align:left;border-bottom:1px solid var(--border);padding:13px 11px;white-space:nowrap}
+th{color:#665d4d;background:#eee8dc}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.field label{display:block;font-family:Arial,sans-serif;font-size:11px;font-weight:700;color:#514c41;margin-bottom:7px}
+.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid #d6cdbd;border-radius:3px;font-size:12px;background:#fffdf8;color:var(--text)}
+.field textarea{min-height:90px;resize:vertical}
+.field.full{grid-column:1/-1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.notice{background:#f4ecda;border:1px solid #ddc99f;color:#69532b;padding:14px;border-radius:3px;font-family:Arial,sans-serif;font-size:11px;line-height:1.7;margin-bottom:18px}
+.empty{padding:28px;text-align:center;color:var(--muted);font-family:Arial,sans-serif;font-size:12px}
+.dashboard-report-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dashboard-meta{font-family:Arial,sans-serif;font-size:10px;color:var(--muted);line-height:1.6}
+.dashboard-number{font-size:25px;font-weight:700;color:var(--navy);margin:13px 0 4px}
+.progress-track{height:6px;background:#e8e1d4;overflow:hidden;margin:11px 0 8px}
+.progress-fill{height:100%;background:var(--gold)}
+.progress-fill.complete{background:var(--green)}
+.dashboard-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:Arial,sans-serif;font-size:10px;color:var(--muted)}
+.hidden{display:none!important}
+input[type="month"]{background:#fffdf8;color:var(--text);padding:9px;border:1px solid var(--border);border-radius:4px}
+@media(max-width:800px){.sidebar{width:195px}.content{padding:22px 16px}.topbar{padding:17px}.cards{grid-template-columns:1fr}.report-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.app{display:block}.sidebar{width:100%;padding:16px;border-right:0;border-bottom:3px solid var(--gold)}.brand-sub{display:none}.side-label{margin-top:17px}.nav-list{display:flex;gap:5px;flex-wrap:wrap}.nav{width:auto;padding:10px}.sidebar-foot{display:none}.topbar{padding:15px}.content{padding:18px 12px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.page-title{font-size:23px}.tag{font-size:9px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">MONITORING<br>PRODUKSI</div>
+    <div class="brand-sub">Production &amp; Quality Control System</div>
+    <div class="side-label">MENU UTAMA</div>
+    <div class="nav-list">
+      <button class="nav active" data-page="dashboard">▦ &nbsp; Dashboard</button>
+      <button class="nav" data-page="leader">▤ &nbsp; Leader</button>
+      <button class="nav" data-page="qc">✓ &nbsp; QC</button>
+    </div>
+    <div class="sidebar-foot">SISTEM MONITORING PRODUKSI<br>Data tersimpan online<br><br>Akses tanpa login</div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h2 id="topTitle">Dashboard</h2>
+        <p>Monitoring laporan produksi dan quality control</p>
+      </div>
+      <div style="text-align:right">
+        <span class="tag" id="liveDate">Memuat tanggal...</span>
+        <div id="liveClock" style="font:600 14px Arial,sans-serif;color:var(--navy);margin-top:7px">--:--:--</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <section id="dashboardPage">
+        <h1 class="page-title">Dashboard Monitoring Laporan</h1>
+        <p class="subtitle">Pantau laporan dan target otomatis sesuai kalender bulan yang dipilih. Hari Minggu tidak dihitung.</p>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Periode Laporan</h3>
+            <input type="month" id="dashboardMonth" aria-label="Pilih bulan dashboard">
+          </div>
+          <p class="subtitle" style="margin:0">Target harian mengikuti jumlah tanggal Senin–Sabtu. Target mingguan mengikuti minggu kalender yang memiliki hari kerja. Maintenance 3 bulanan dijadwalkan Januari, April, Juli, dan Oktober.</p>
+        </div>
+        <div class="cards">
+          <div class="card"><small>Total Jenis Laporan</small><strong id="dashTotalTypes">8</strong><span>Semua menu Leader dan QC</span></div>
+          <div class="card"><small>Laporan Sudah Dikerjakan</small><strong id="dashDone">0</strong><span>Catatan selesai pada bulan terpilih</span></div>
+          <div class="card"><small>Rata-rata Pencapaian</small><strong id="dashPercent">0%</strong><span>Persentase terhadap target</span></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Monitoring Leader / Maintenance</h3><span class="status">Target sesuai frekuensi</span></div>
+          <div id="dashboardLeader" class="report-grid"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Monitoring Quality Control (QC)</h3><span class="status">Target bulanan</span></div>
+          <div id="dashboardQC" class="report-grid"></div>
+        </div>
+        <div class="notice">Pencapaian dihitung dari catatan berstatus <b>Sudah Dilakukan</b>. Data diambil dari Supabase dan dibagikan kepada semua pengunjung website.</div>
+      </section>
+
+      <section id="leaderPage" class="hidden">
+        <h1 class="page-title">Laporan Leader</h1>
+        <p class="subtitle">Divisi Lunch Box · Penanggung jawab: Nova dan Hasan.</p>
+        <div class="periods">
+          <button class="period active" data-period="Harian">Harian</button>
+          <button class="period" data-period="Mingguan">Mingguan</button>
+          <button class="period" data-period="3 Bulan">3 Bulan</button>
+        </div>
+        <div class="notice">Pilih laporan untuk mengisi catatan. Data tersimpan ke database online.</div>
+        <div id="leaderReports" class="report-grid"></div>
+      </section>
+
+      <section id="qcPage" class="hidden">
+        <h1 class="page-title">Laporan Quality Control</h1>
+        <p class="subtitle">Penanggung jawab: Cusi dan Maya.</p>
+        <div id="qcReports" class="report-grid"></div>
+      </section>
+
+      <section id="formPage" class="hidden">
+        <button class="btn secondary" onclick="goBack()">← Kembali ke daftar</button>
+        <h1 class="page-title" id="formTitle" style="margin-top:22px">Form Laporan</h1>
+        <p class="subtitle" id="formSubtitle">Isi laporan lalu simpan.</p>
+        <div class="panel">
+          <form id="reportForm">
+            <div class="form-grid" id="formFields"></div>
+            <div class="actions">
+              <button class="btn" id="saveButton" type="submit">Simpan Laporan</button>
+              <button class="btn secondary" type="button" onclick="resetForm()">Reset</button>
+            </div>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Riwayat Catatan</h3>
+            <button class="btn danger" onclick="clearCurrentRecords()">Hapus Semua Riwayat</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Tanggal</th><th>Nama Laporan</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr></thead>
+              <tbody id="historyRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = "https://iphiolhqpaxhiwwigxyl.supabase.co";
+const SUPABASE_KEY = "sb_publishable_bNjEu-tOspwFelkM2CFo7A_Ds9349Kg";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const reports = {
+  leader: {
+    "Harian": [
+      {name:"Monitoring Suhu",desc:"Pencatatan tanggal, shift, dan status.",fields:["Tanggal","Shift","Status"]},
+      {name:"Kartu Stok Barang",desc:"Barang Masuk, Barang Keluar, dan Permintaan Barang.",fields:["Tanggal","Jenis Transaksi","Nama Barang","Jumlah","Catatan"]},
+      {name:"Hygiene Clearance Record",desc:"Pencatatan pemeriksaan hygiene.",fields:["Tanggal","Shift","Status","Catatan"]}
+    ],
+    "Mingguan": [
+      {name:"Kebersihan dan Pemeriksaan Mesin",desc:"Pemeriksaan kebersihan dan kondisi mesin.",fields:["Tanggal","Nama Mesin","Status","Catatan"]},
+      {name:"Work Order Maintenance",desc:"Pencatatan pekerjaan maintenance.",fields:["Tanggal","Nama Mesin","Status","Catatan"]},
+      {name:"Maintenance Checklist",desc:"Pemeriksaan berkala kondisi mesin.",fields:["Tanggal","Nama Mesin","Status","Catatan"]}
+    ],
+    "3 Bulan": [
+      {name:"Maintenance Mesin",desc:"Jadwal maintenance, revisi, dan alasan perubahan.",fields:["Tanggal Jadwal","Nama Mesin","Status","Jadwal Revisi","Alasan Revisi","Catatan"]}
+    ]
+  },
+  qc: [
+    {name:"Change Over",desc:"Catatan pelaksanaan Change Over.",fields:["Tanggal","Shift","Status","Catatan"]},
+    {name:"Checklist Kebersihan",desc:"Pencatatan pemeriksaan kebersihan QC.",fields:["Tanggal","Shift","Status","Catatan"]}
+  ]
+};
+
+let currentPage="dashboard";
+let currentPeriod="Harian";
+let currentReport=null;
+let currentGroup="Leader";
+let editingId=null;
+let records=[];
+
+const now=new Date();
+const monthKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+document.getElementById("dashboardMonth").value=monthKey;
+
+function localDateString(date=new Date()){
+  const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,"0"),d=String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+function updateLiveClock(){
+  const n=new Date();
+  document.getElementById("liveDate").textContent=n.toLocaleDateString("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+  document.getElementById("liveClock").textContent=n.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+}
+function escapeHtml(s){
+  return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function allReports(){
+  const list=[];
+  Object.entries(reports.leader).forEach(([period,items])=>items.forEach(r=>list.push({...r,group:"Leader",period})));
+  reports.qc.forEach(r=>list.push({...r,group:"QC",period:"Harian"}));
+  return list;
+}
+function calendarTargets(month){
+  const [year,monthNumber]=month.split("-").map(Number);
+  const daysInMonth=new Date(year,monthNumber,0).getDate();
+  let workingDays=0;const weeks=new Set();
+  for(let day=1;day<=daysInMonth;day++){
+    const date=new Date(year,monthNumber-1,day);
+    if(date.getDay()===0)continue;
+    workingDays++;
+    const monday=new Date(year,monthNumber-1,day);
+    monday.setDate(monday.getDate()-((monday.getDay()+6)%7));
+    weeks.add(`${monday.getFullYear()}-${monday.getMonth()+1}-${monday.getDate()}`);
+  }
+  return {workingDays,workingWeeks:weeks.size};
+}
+function reportTarget(r,month){
+  const c=calendarTargets(month);
+  if(r.period==="Harian")return {target:c.workingDays,label:`Harian · ${c.workingDays} hari kerja`};
+  if(r.period==="Mingguan")return {target:c.workingWeeks,label:`Mingguan · ${c.workingWeeks} minggu kerja`};
+  if(r.period==="3 Bulan"){
+    const m=Number(month.split("-")[1]),due=[1,4,7,10].includes(m);
+    return {target:due?1:0,label:due?"3 bulanan · jadwal bulan ini":"3 bulanan · bukan bulan jadwal"};
+  }
+  return {target:1,label:"Bulanan · target 1 kali"};
+}
+function reportMonthRecords(name,month){return records.filter(r=>r.name===name&&String(r.date||"").slice(0,7)===month)}
+function completedRecords(name,month){return reportMonthRecords(name,month).filter(r=>String(r.status||"").toLowerCase()==="sudah dilakukan")}
+
+function dashboardCard(r,month){
+  const info=reportTarget(r,month),done=completedRecords(r.name,month).length,target=info.target;
+  const pct=target>0?Math.min(100,Math.round(done/target*100)):0;
+  const remaining=target>0?Math.max(0,target-done):0;
+  const complete=target>0&&done>=target;
+  const statusText=target===0?"Belum dijadwalkan":complete?"Target Tercapai":done===0?"Belum Dikerjakan":"Dalam Proses";
+  return `<div class="dashboard-report">
+    <div class="dashboard-report-head"><div><h4>${escapeHtml(r.name)}</h4><div class="dashboard-meta">${escapeHtml(r.group)} · ${escapeHtml(info.label)}</div></div><span class="status ${complete?"complete":done===0&&target>0?"incomplete":""}">${statusText}</span></div>
+    <div class="dashboard-number">${done} <span style="font-size:12px;font-weight:400;color:var(--muted)">kali selesai</span></div>
+    <div class="dashboard-meta">${target===0?"Target bulan ini: —":`Target: ${target} kali`}</div>
+    <div class="progress-track"><div class="progress-fill ${complete?"complete":""}" style="width:${pct}%"></div></div>
+    <div class="dashboard-foot"><span>Pencapaian: <b>${target===0?"—":pct+"%"}</b></span><span>${target===0?"":complete?"Target terpenuhi":`Kurang ${remaining} kali`}</span></div>
+    <div class="actions"><button class="btn secondary" onclick="openReport('${r.group}','${encodeURIComponent(r.name)}','${r.period}')">Buka Laporan</button></div>
+  </div>`;
+}
+function renderDashboard(){
+  const month=document.getElementById("dashboardMonth").value||monthKey;
+  const list=allReports(),leader=list.filter(r=>r.group==="Leader"),qc=list.filter(r=>r.group==="QC");
+  document.getElementById("dashboardLeader").innerHTML=leader.map(r=>dashboardCard(r,month)).join("");
+  document.getElementById("dashboardQC").innerHTML=qc.map(r=>dashboardCard(r,month)).join("");
+  let sumPct=0,count=0,doneTotal=0;
+  list.forEach(r=>{
+    const info=reportTarget(r,month),done=completedRecords(r.name,month).length;
+    doneTotal+=done;
+    if(info.target>0){sumPct+=Math.min(100,done/info.target*100);count++}
+  });
+  document.getElementById("dashTotalTypes").textContent=list.length;
+  document.getElementById("dashDone").textContent=doneTotal;
+  document.getElementById("dashPercent").textContent=(count?Math.round(sumPct/count):0)+"%";
+}
+document.getElementById("dashboardMonth").addEventListener("change",renderDashboard);
+
+async function loadRecordsFromSupabase(){
+  const {data,error}=await supabaseClient
+    .from("monitoring_produksi_records")
+    .select("*")
+    .order("tanggal",{ascending:false});
+
+  if(error){
+    alert("Gagal mengambil data Supabase: "+error.message);
+    return;
+  }
+
+  records=(data||[]).map(item=>({
+    id:item.id,
+    date:item.tanggal,
+    name:item.nama_laporan||item.report_name||"",
+    status:item.status||"",
+    note:item.keterangan||"",
+    group:item.bagian||"Leader",
+    period:item.data_laporan?.period||"",
+    formData:item.data_laporan?.fields||{}
+  }));
+
+  renderDashboard();
+  renderLeader();
+  renderQC();
+
+  if(currentReport)renderHistory();
+}
+
+function showPage(page){
+  currentPage=page;
+  ["dashboard","leader","qc","form"].forEach(p=>document.getElementById(p+"Page").classList.toggle("hidden",p!==page));
+  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  document.getElementById("topTitle").textContent={dashboard:"Dashboard",leader:"Leader",qc:"QC",form:"Form Laporan"}[page];
+  if(page==="dashboard")renderDashboard();
+  if(page==="leader")renderLeader();
+  if(page==="qc")renderQC();
+}
+document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+document.querySelectorAll(".period").forEach(b=>b.addEventListener("click",()=>{
+  currentPeriod=b.dataset.period;
+  document.querySelectorAll(".period").forEach(x=>x.classList.toggle("active",x===b));
+  renderLeader();
+}));
+
+function reportCard(r,group){
+  return `<div class="report"><div class="report-top"><div class="report-icon">${group==="QC"?"Q":"L"}</div>
+    <div><h4>${escapeHtml(r.name)}</h4><p>${escapeHtml(r.desc)}</p></div></div>
+    <div class="report-bottom"><span class="status">Laporan</span>
+    <button class="btn" onclick="openReport('${group}','${encodeURIComponent(r.name)}','${r.period||currentPeriod}')">Buka Laporan</button></div></div>`;
+}
+function renderLeader(){
+  document.getElementById("leaderReports").innerHTML=reports.leader[currentPeriod].map(r=>reportCard({...r,period:currentPeriod},"Leader")).join("");
+}
+function renderQC(){
+  document.getElementById("qcReports").innerHTML=reports.qc.map(r=>reportCard({...r,period:"Harian"},"QC")).join("");
+}
+function findReport(group,name){
+  return group==="QC"?reports.qc.find(r=>r.name===name):Object.values(reports.leader).flat().find(r=>r.name===name);
+}
+function openReport(group,encodedName,period){
+  const name=decodeURIComponent(encodedName);
+  currentGroup=group;currentPeriod=period||currentPeriod;editingId=null;
+  currentReport=findReport(group,name);
+  if(!currentReport)return;
+  document.getElementById("formTitle").textContent=currentReport.name;
+  document.getElementById("formSubtitle").textContent=(group==="QC"?"QC · Cusi / Maya":"Leader · Nova / Hasan")+" · Form laporan";
+  document.getElementById("saveButton").textContent="Simpan Laporan";
+  document.getElementById("formFields").innerHTML=currentReport.fields.map((f,i)=>{
+    let control="";
+    if(f==="Status")control=`<select name="${f}" required><option value="">Pilih status</option><option>Sudah Dilakukan</option><option>Belum Dilakukan</option></select>`;
+    else if(f==="Shift")control=`<select name="${f}" required><option value="">Pilih shift</option><option>Shift 1</option><option>Shift 2</option><option>Shift 3</option></select>`;
+    else if(f==="Jenis Transaksi")control=`<select name="${f}" required><option value="">Pilih jenis</option><option>Barang Masuk</option><option>Barang Keluar</option><option>Permintaan Barang</option></select>`;
+    else if(f.toLowerCase().includes("tanggal"))control=`<input type="date" name="${f}" ${i===0?"required":""}>`;
+    else if(f==="Catatan"||f==="Alasan Revisi")control=`<textarea name="${f}" placeholder="Masukkan ${f.toLowerCase()}"></textarea>`;
+    else control=`<input name="${f}" placeholder="Masukkan ${f.toLowerCase()}">`;
+    return `<div class="field${f==="Catatan"||f==="Alasan Revisi"?" full":""}"><label>${escapeHtml(f)}</label>${control}</div>`;
+  }).join("");
+  resetForm();renderHistory();showPage("form");
+}
+function resetForm(){
+  document.getElementById("reportForm").reset();
+  document.querySelectorAll('#formFields input[type="date"]').forEach(el=>{if(!el.value)el.value=localDateString()});
+  editingId=null;
+  const b=document.getElementById("saveButton");b.textContent="Simpan Laporan";
+}
+function goBack(){showPage(currentGroup==="QC"?"qc":"leader")}
+
+document.getElementById("reportForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!currentReport)return;
+
+  const formData=new FormData(e.target),fields={};
+  for(const [key,value] of formData.entries()){
+    if(typeof value==="string")fields[key]=value;
+  }
+
+  const date=fields["Tanggal"]||fields["Tanggal Jadwal"]||localDateString();
+  const note=fields["Catatan"]||fields["Alasan Revisi"]||fields["Nama Barang"]||"";
+  const status=fields["Status"]||fields["Jenis Transaksi"]||"Tercatat";
+
+  // Payload mengirim dua nama kolom untuk kompatibilitas skema database.
+  const payload={
+    report_name:currentReport.name,
+    nama_laporan:currentReport.name,
+    bagian:currentGroup,
+    nama_mesin:fields["Nama Mesin"]||null,
+    tanggal:date,
+    status:status,
+    keterangan:note,
+    data_laporan:{
+      period:currentPeriod,
+      fields:fields
+    }
+  };
+
+  const button=document.getElementById("saveButton");
+  const isEditing=!!editingId;
+  button.disabled=true;
+  button.textContent="Menyimpan...";
+
+  let result;
+
+  if(isEditing){
+    result=await supabaseClient
+      .from("monitoring_produksi_records")
+      .update(payload)
+      .eq("id",editingId);
+  }else{
+    result=await supabaseClient
+      .from("monitoring_produksi_records")
+      .insert(payload);
+  }
+
+  button.disabled=false;
+  button.textContent=isEditing?"Simpan Perubahan":"Simpan Laporan";
+
+  if(result.error){
+    alert("Gagal menyimpan: "+result.error.message);
+    return;
+  }
+
+  alert(isEditing?"Perubahan berhasil disimpan.":"Laporan berhasil disimpan.");
+
+  editingId=null;
+  resetForm();
+
+  await loadRecordsFromSupabase();
+  renderHistory();
+  renderDashboard();
+});
+
+function renderHistory(){
+  if(!currentReport)return;
+
+  const list=records.filter(r=>r.name===currentReport.name);
+
+  document.getElementById("historyRows").innerHTML=list.length?list.map(r=>`
+    <tr>
+      <td>${escapeHtml(r.date)}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.status)}</td>
+      <td>${escapeHtml(r.note)}</td>
+      <td>
+        <button class="btn secondary" onclick="editRecord(${Number(r.id)})">Edit</button>
+        <button class="btn danger" onclick="deleteRecord(${Number(r.id)})">Hapus</button>
+      </td>
+    </tr>`).join(""):'<tr><td colspan="5" class="empty">Belum ada catatan laporan.</td></tr>';
+}
+
+function editRecord(id){
+  const record=records.find(r=>Number(r.id)===Number(id));
+  if(!record||!currentReport)return;
+
+  editingId=record.id;
+
+  document.querySelectorAll("#formFields [name]").forEach(el=>{
+    const value=record.formData?.[el.name]??"";
+    el.value=value;
+  });
+
+  document.getElementById("saveButton").textContent="Simpan Perubahan";
+  document.getElementById("formTitle").textContent="Edit: "+currentReport.name;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function deleteRecord(id){
+  if(!confirm("Hapus catatan ini secara permanen dari database bersama?"))return;
+
+  const {error}=await supabaseClient
+    .from("monitoring_produksi_records")
+    .delete()
+    .eq("id",id);
+
+  if(error){
+    alert("Gagal menghapus: "+error.message);
+    return;
+  }
+
+  if(Number(editingId)===Number(id))resetForm();
+
+  await loadRecordsFromSupabase();
+  renderHistory();
+  renderDashboard();
+
+  alert("Catatan berhasil dihapus.");
+}
+
+async function clearCurrentRecords(){
+  if(!currentReport)return;
+
+  if(!confirm("Hapus SEMUA catatan untuk laporan "+currentReport.name+" dari database bersama?"))return;
+
+  const {error}=await supabaseClient
+    .from("monitoring_produksi_records")
+    .delete()
+    .eq("nama_laporan",currentReport.name);
+
+  if(error){
+    alert("Gagal menghapus data: "+error.message);
+    return;
+  }
+
+  resetForm();
+  await loadRecordsFromSupabase();
+  renderHistory();
+  renderDashboard();
+
+  alert("Riwayat laporan berhasil dihapus.");
+}
+
+updateLiveClock();
+setInterval(updateLiveClock,1000);
+renderLeader();
+renderQC();
+renderDashboard();
+loadRecordsFromSupabase();
+</script>
+</body>
+</html>
   --navy:#20352f;--blue:#9a783e;--bg:#f4f0e7;--text:#2b302c;
   --muted:#77786f;--border:#ded6c7;--green:#3e7057;
   --red:#a64d42;--cream:#fbf9f4;--gold:#b3945d
